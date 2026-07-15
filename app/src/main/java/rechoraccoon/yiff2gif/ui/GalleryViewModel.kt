@@ -58,7 +58,6 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
             _state.value = _state.value.copy(loginError = null, loading = true)
             try {
                 val trialApi = E621Api.create(user, apiKey)
-                // Verify credentials by attempting to fetch favorites.
                 trialApi.favorites(login = user, page = 1, limit = 1)
                 prefs.saveCredentials(user, apiKey)
                 username = user
@@ -133,12 +132,11 @@ class GalleryViewModel(app: Application) : AndroidViewModel(app) {
             _state.value = _state.value.copy(loading = true)
             try {
                 val page = _state.value.page
-                val result = if (_state.value.mode == Mode.FAVORITES) {
-                    a.favorites(login = username, page = page)
+                val newPosts: List<Post> = if (_state.value.mode == Mode.FAVORITES) {
+                    a.favorites(login = username, page = page).posts.orEmpty()
                 } else {
-                    a.posts(tags = _state.value.query, page = page)
+                    a.posts(tags = _state.value.query, page = page).posts.orEmpty()
                 }
-                val newPosts = result.posts.orEmpty()
                 _state.value = _state.value.copy(
                     posts = _state.value.posts + newPosts,
                     page = page + 1,

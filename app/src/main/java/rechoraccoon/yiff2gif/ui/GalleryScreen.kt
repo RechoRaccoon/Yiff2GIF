@@ -3,6 +3,7 @@ package rechoraccoon.yiff2gif.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -47,7 +48,6 @@ fun GalleryScreen(
     var query by remember { mutableStateOf("") }
     val gridState = rememberLazyGridState()
 
-    // Trigger load-more when user scrolls near the end of the list.
     val shouldLoadMore by remember {
         derivedStateOf {
             val layoutInfo = gridState.layoutInfo
@@ -60,12 +60,9 @@ fun GalleryScreen(
         if (shouldLoadMore) onLoadMore()
     }
 
-    // Accumulated pinch scale; every time it crosses a threshold we bump columns by +-1
-    // and reset, so it takes a full pinch gesture per step rather than continuous scaling.
     var pinchAccum by remember { mutableStateOf(1f) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Fixed search bar, padded so it clears the display cutout / status bar.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,10 +105,10 @@ fun GalleryScreen(
                         pinchAccum *= zoom
                         val step = 0.18f
                         if (pinchAccum > 1f + step) {
-                            onGridColumnsChange(-1) // zoom in -> fewer, bigger columns
+                            onGridColumnsChange(-1)
                             pinchAccum = 1f
                         } else if (pinchAccum < 1f - step) {
-                            onGridColumnsChange(1) // zoom out -> more, smaller columns
+                            onGridColumnsChange(1)
                             pinchAccum = 1f
                         }
                     }
@@ -213,14 +210,11 @@ private fun PostTile(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .pointerInput(post.id) {
-                    androidx.compose.foundation.gestures.detectTapGestures(onTap = { onClick() })
-                }
+                .clickable(onClick = onClick)
         )
     }
 }
 
-/** Simple non-branded 5-point star, drawn with Canvas so there's no trademark/copyright concern. */
 @Composable
 private fun StarIcon(filled: Boolean) {
     val color = if (filled) NeonGreen else Color.White
